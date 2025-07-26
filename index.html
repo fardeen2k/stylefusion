@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StyleFusion.ai - AI for Fashion & Interior Design</title>
+<style>
+  /* Reset */
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+  body, html {
+    margin: 0; padding: 0;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    color: #f0f0f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 2rem 1rem 3rem;
+    overflow-x: hidden;
+  }
+  header {
+    width: 100%;
+    max-width: 1100px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 3rem;
+    user-select:none;
+  }
+  header h1 {
+    font-size: 3rem;
+    font-weight: 900;
+    margin: 0;
+    letter-spacing: 0.1em;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+  }
+  header p {
+    margin-top: 0.6rem;
+    font-size: 1.35rem;
+    font-weight: 500;
+    color: #d4d2f8cc;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+  }
+  #loginBtn {
+    background-color: #6a11cb;
+    border: none;
+    padding: 0.7rem 1.8rem;
+    font-weight: 700;
+    font-size: 1rem;
+    border-radius: 10px;
+    color: white;
+    box-shadow: 0 6px 16px rgba(106, 17, 203, 0.6);
+    cursor: pointer;
+    user-select:none;
+    transition: background-color 0.3s ease;
+  }
+  #loginBtn:hover, #loginBtn:focus {
+    background-color: #5333aa;
+    outline: none;
+  }
+  main {
+    display: flex;
+    gap: 2.5rem;
+    max-width: 1100px;
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .option-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 1rem;
+    padding: 2.5rem 2rem;
+    flex: 1 1 300px;
+    max-width: 350px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+    box-shadow: 0 8px 24px rgba(106, 17, 203, 0.35);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    user-select: none;
+    text-decoration: none;
+    color: inherit;
+  }
+  .option-card:hover,
+  .option-card:focus {
+    transform: translateY(-10px);
+    box-shadow: 0 12px 36px rgba(106, 17, 203, 0.6);
+  }
+  .option-icon {
+    font-size: 5rem;
+    margin-bottom: 1rem;
+    color: #d1c4fd;
+    text-shadow: 2px 2px 6px rgba(0,0,0,0.4);
+  }
+  .option-title {
+    font-size: 1.9rem;
+    font-weight: 800;
+    margin: 0.5rem 0 1rem;
+    color: #e9defa;
+    text-align: center;
+  }
+  .option-desc {
+    font-weight: 500;
+    font-size: 1.1rem;
+    line-height: 1.4;
+    color: #c9c4e2cc;
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .option-btn {
+    background-color: #6a11cb;
+    color: white;
+    border: none;
+    padding: 0.9rem 2.5rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    border-radius: 12px;
+    box-shadow: 0 6px 16px rgba(106,17,203,0.6);
+    user-select:none;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .option-btn:hover,
+  .option-btn:focus {
+    background-color: #5354e2;
+    box-shadow: 0 8px 22px rgba(83,84,226,0.8);
+    outline: none;
+  }
+  footer {
+    color: #d4d2f8bb;
+    font-weight: 600;
+    margin-top: auto;
+    padding: 1rem 0;
+    text-align: center;
+    user-select:none;
+  }
+  @media (max-width: 720px) {
+    main {
+      flex-direction: column;
+      gap: 2rem;
+      align-items: center;
+    }
+  }
+
+  /* Modal styles */
+  #modalOverlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+  }
+  #modalOverlay.active {
+    display: flex;
+  }
+  #modal {
+    background: white;
+    color: #222;
+    border-radius: 16px;
+    max-width: 420px;
+    width: 90%;
+    padding: 2rem;
+    box-sizing: border-box;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(106, 17, 203, 0.4);
+    user-select:none;
+  }
+  #modal h2 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #6a11cb;
+    font-weight: 900;
+    font-size: 1.8rem;
+    text-align: center;
+  }
+  #modal form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  #modal label {
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+  }
+  #modal input {
+    padding: 0.6rem;
+    font-size: 1rem;
+    border-radius: 8px;
+    border: 2px solid #6a11cb;
+    outline-offset: 2px;
+  }
+  #modal input:focus {
+    border-color: #2575fc;
+    outline: none;
+  }
+  #modal button.submit-btn {
+    margin-top: 1rem;
+    background-color: #6a11cb;
+    color: white;
+    border: none;
+    padding: 0.9rem 1rem;
+    font-weight: 700;
+    font-size: 1.15rem;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(106,17,203,0.7);
+    transition: background-color 0.3s ease;
+  }
+  #modal button.submit-btn:hover {
+    background-color: #2575fc;
+  }
+  #modal .toggle-link {
+    margin-top: 1rem;
+    color: #6a11cb;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    user-select:none;
+    user-select:none;
+  }
+  #modal .toggle-link:hover, #modal .toggle-link:focus {
+    text-decoration: underline;
+    outline: none;
+  }
+  #modal button.close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: transparent;
+    border: none;
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: #6a11cb;
+    cursor: pointer;
+    user-select:none;
+  }
+  #modal button.close-btn:hover, #modal button.close-btn:focus {
+    color: #2575fc;
+    outline: none;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>StyleFusion.ai</h1>
+  <button id="loginBtn" aria-haspopup="dialog" aria-controls="modal" aria-expanded="false">Login / Signup</button>
+</header>
+<main>
+  <a href="interior.html" class="option-card" tabindex="0" role="link" aria-labelledby="interior-title" aria-describedby="interior-desc">
+    <div class="option-icon" aria-hidden="true">🏠</div>
+    <h2 class="option-title" id="interior-title">Interior Design Assistant</h2>
+    <p class="option-desc" id="interior-desc">
+      Upload images of your rooms and receive stunning AI-powered interior redesigns, style tags, and decor suggestions.
+    </p>
+    <button class="option-btn" type="button">Explore Interiors</button>
+  </a>
+
+  <a href="fashion.html" class="option-card" tabindex="0" role="link" aria-labelledby="fashion-title" aria-describedby="fashion-desc">
+    <div class="option-icon" aria-hidden="true">👗</div>
+    <h2 class="option-title" id="fashion-title">Fashion Design Generator</h2>
+    <p class="option-desc" id="fashion-desc">
+      Upload your fashion sketches and get photorealistic clothing images generated by powerful AI models to bring your design ideas to life.
+    </p>
+    <button class="option-btn" type="button">Discover Fashion</button>
+  </a>
+
+  <a href="matcher.html" class="option-card" tabindex="0" role="link" aria-labelledby="matcher-title" aria-describedby="matcher-desc">
+    <div class="option-icon" aria-hidden="true">🔗</div>
+    <h2 class="option-title" id="matcher-title">Style Matcher</h2>
+    <p class="option-desc" id="matcher-desc">
+      Combine your room and outfit aesthetics and get AI-powered style compatibility scores and suggestions.
+    </p>
+    <button class="option-btn" type="button">Match Styles</button>
+  </a>
+</main>
+<footer>
+  &copy; 2024 StyleFusion.ai | Where Fashion Meets Interior Magic
+</footer>
+
+<!-- Modal -->
+<div id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDesc" tabindex="-1">
+  <div id="modal">
+    <button class="close-btn" aria-label="Close login/signup modal">&times;</button>
+
+    <section id="loginSection" hidden>
+      <h2 id="modalTitle">Login to StyleFusion.ai</h2>
+      <form id="loginForm">
+        <label for="login-email">Email:</label>
+        <input id="login-email" type="email" required autocomplete="username" />
+        <label for="login-password">Password:</label>
+        <input id="login-password" type="password" required autocomplete="current-password" />
+        <button type="submit" class="submit-btn">Login</button>
+      </form>
+      <div class="toggle-link" id="toSignup">Don't have an account? Sign up</div>
+    </section>
+
+    <section id="signupSection" hidden>
+      <h2 id="modalTitle">Sign Up for StyleFusion.ai</h2>
+      <form id="signupForm">
+        <label for="signup-name">Full Name:</label>
+        <input id="signup-name" type="text" required />
+        <label for="signup-email">Email:</label>
+        <input id="signup-email" type="email" required autocomplete="email" />
+        <label for="signup-password">Password:</label>
+        <input id="signup-password" type="password" required autocomplete="new-password" />
+        <button type="submit" class="submit-btn">Sign Up</button>
+      </form>
+      <div class="toggle-link" id="toLogin">Already have an account? Log in</div>
+    </section>
+  </div>
+</div>
+
+<script>
+(() => {
+  const loginBtn = document.getElementById('loginBtn');
+  const modalOverlay = document.getElementById('modalOverlay');
+  const modal = document.getElementById('modal');
+  const closeBtn = modal.querySelector('.close-btn');
+
+  const loginSection = document.getElementById('loginSection');
+  const signupSection = document.getElementById('signupSection');
+  const toSignup = document.getElementById('toSignup');
+  const toLogin = document.getElementById('toLogin');
+
+  // Show modal and show login form initially
+  loginBtn.addEventListener('click', () => {
+    modalOverlay.classList.add('active');
+    loginSection.hidden = false;
+    signupSection.hidden = true;
+    loginBtn.setAttribute('aria-expanded', 'true');
+    trapFocus(modalOverlay);
+  });
+
+  // Close modal handler
+  closeBtn.addEventListener('click', () => {
+    closeModal();
+  });
+  modalOverlay.addEventListener('click', (e) => {
+    if (e.target === modalOverlay) closeModal();
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && modalOverlay.classList.contains('active')) closeModal();
+  });
+
+  function closeModal() {
+    modalOverlay.classList.remove('active');
+    loginBtn.setAttribute('aria-expanded', 'false');
+    loginBtn.focus();
+  }
+
+  // Toggle to signup form
+  toSignup.addEventListener('click', () => {
+    loginSection.hidden = true;
+    signupSection.hidden = false;
+  });
+  toLogin.addEventListener('click', () => {
+    signupSection.hidden = true;
+    loginSection.hidden = false;
+  });
+
+  // Simple form submit handlers with alert (replace with real backend logic)
+  document.getElementById('loginForm').addEventListener('submit', e => {
+    e.preventDefault();
+    alert(`Logged in as ${e.target['login-email'].value}`);
+    closeModal();
+  });
+  document.getElementById('signupForm').addEventListener('submit', e => {
+    e.preventDefault();
+    alert(`Signed up as ${e.target['signup-email'].value}`);
+    closeModal();
+  });
+
+  // Focus trap for modal
+  function trapFocus(element) {
+    const focusableElements = element.querySelectorAll('a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])');
+    const firstFocusable = focusableElements[0];
+    const lastFocusable = focusableElements[focusableElements.length - 1];
+    element.focus();
+
+    function handleTab(e) {
+      if (e.key !== 'Tab') return;
+
+      if (e.shiftKey) { // Shift + Tab
+        if (document.activeElement === firstFocusable) {
+          e.preventDefault();
+          lastFocusable.focus();
+        }
+      } else { // Tab
+        if (document.activeElement === lastFocusable) {
+          e.preventDefault();
+          firstFocusable.focus();
+        }
+      }
+    }
+    element.addEventListener('keydown', handleTab);
+  }
+})();
+</script>
+</body>
+</html>

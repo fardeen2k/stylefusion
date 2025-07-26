@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Interior Design Assistant - StyleFusion.ai</title>
+<style>
+  body, html {
+    margin: 0; padding: 0;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: #f9fafb;
+    min-height: 100vh;
+    color: #333;
+  }
+  header {
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 2rem;
+    box-sizing: border-box;
+    user-select:none;
+  }
+  header a {
+    color: white;
+    font-size: 1.4rem;
+    text-decoration: none;
+    font-weight: 700;
+    border-radius: 6px;
+    padding: 0.3rem 0.7rem;
+    background: rgba(255 255 255 / 0.2);
+    transition: background-color 0.3s ease;
+  }
+  header a:hover, header a:focus {
+    background: rgba(255 255 255 / 0.4);
+    outline: none;
+  }
+  main {
+    max-width: 900px;
+    margin: 3rem auto;
+    padding: 0 1rem;
+  }
+  h1 {
+    color: #2575fc;
+    font-weight: 900;
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  label.file-label {
+    background-color: #6a11cb;
+    color: white;
+    padding: 12px 24px;
+    font-weight: 700;
+    border-radius: 10px;
+    cursor: pointer;
+    user-select:none;
+    display: inline-block;
+    margin-bottom: 1rem;
+    transition: background-color 0.3s ease;
+  }
+  label.file-label:hover, label.file-label:focus {
+    background-color: #2575fc;
+    outline: none;
+  }
+  input[type="file"] {
+    display: none;
+  }
+  #preview-container {
+    border: 2px solid #6a11cb;
+    border-radius: 12px;
+    padding: 1rem;
+    background: white;
+    height: 350px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    margin-bottom: 1.2rem;
+    box-shadow: 0 6px 14px rgba(106,17,203,0.3);
+  }
+  #preview-container img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 10px;
+  }
+  #generateBtn {
+    background-color: #6a11cb;
+    color: white;
+    padding: 0.85rem 2.5rem;
+    border: none;
+    border-radius: 14px;
+    font-weight: 700;
+    font-size: 1.15rem;
+    cursor: pointer;
+    user-select:none;
+    box-shadow: 0 6px 16px rgba(106,17,203,0.6);
+    transition: background-color 0.3s ease;
+    display: block;
+    margin: 0 auto 2rem;
+  }
+  #generateBtn:disabled {
+    background-color: #9c94d5;
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+  #generateBtn:hover:not(:disabled) {
+    background-color: #2575fc;
+  }
+  #results {
+    background: #f0f0ff;
+    border-radius: 14px;
+    padding: 2rem 1.5rem;
+    box-sizing: border-box;
+    box-shadow: 0 6px 20px rgba(106,17,203,0.25);
+    text-align: center;
+    color: #4a47a3;
+  }
+  #generatedImage {
+    max-width: 100%;
+    max-height: 400px;
+    border-radius: 14px;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+  }
+  #styleTags {
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+  #downloadBtn {
+    padding: 0.7rem 1.5rem;
+    border: none;
+    background-color: #6a11cb;
+    color: white;
+    font-weight: 700;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(106,17,203,0.6);
+    user-select:none;
+    transition: background-color 0.3s ease;
+  }
+  #downloadBtn:hover {
+    background-color: #2575fc;
+  }
+  footer {
+    text-align: center;
+    padding: 1rem 0;
+    color: #6a11cb;
+    font-weight: 600;
+    margin-top: 3rem;
+    user-select:none;
+  }
+</style>
+</head>
+<body>
+<header>
+  <a href="index.html" aria-label="Back to landing page">&larr; Back</a>
+  <h1>Interior Design Assistant</h1>
+</header>
+<main>
+  <label for="roomUpload" class="file-label" tabindex="0">Upload Room Image</label>
+  <input type="file" id="roomUpload" accept="image/*" aria-describedby="uploadDesc" />
+
+  <div id="preview-container" aria-live="polite" aria-atomic="true" aria-label="Image preview container">
+    <span>No image uploaded</span>
+  </div>
+
+  <button id="generateBtn" disabled aria-disabled="true" aria-label="Generate redesigned interior image">Generate Interior Design</button>
+
+  <section id="results" style="display:none;" aria-live="polite" aria-atomic="true">
+    <img id="generatedImage" alt="Generated interior design result" />
+    <div id="styleTags">Style Tags: -</div>
+    <button id="downloadBtn" aria-label="Download generated interior image">Download Image</button>
+  </section>
+</main>
+<footer>
+  &copy; 2024 StyleFusion.ai
+</footer>
+
+<script>
+(() => {
+  const roomUpload = document.getElementById('roomUpload');
+  const previewContainer = document.getElementById('preview-container');
+  const generateBtn = document.getElementById('generateBtn');
+  const resultsSection = document.getElementById('results');
+  const generatedImage = document.getElementById('generatedImage');
+  const styleTags = document.getElementById('styleTags');
+  const downloadBtn = document.getElementById('downloadBtn');
+
+  let originalImageDataUrl = null;
+
+  function clearPreview() {
+    previewContainer.innerHTML = '<span>No image uploaded</span>';
+    originalImageDataUrl = null;
+    generateBtn.disabled = true;
+    generateBtn.setAttribute('aria-disabled', 'true');
+    resultsSection.style.display = 'none';
+  }
+
+  function previewFile(file) {
+    if (!file) {
+      clearPreview();
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      originalImageDataUrl = e.target.result;
+      previewContainer.innerHTML = '';
+      const img = document.createElement('img');
+      img.src = originalImageDataUrl;
+      img.alt = "Uploaded room image preview";
+      previewContainer.appendChild(img);
+      generateBtn.disabled = false;
+      generateBtn.setAttribute('aria-disabled', 'false');
+      resultsSection.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  roomUpload.addEventListener('change', (e) => {
+    previewFile(e.target.files[0]);
+  });
+
+  function simulateInteriorGeneration() {
+    if (!originalImageDataUrl) return;
+
+    generateBtn.disabled = true;
+    generateBtn.textContent = 'Generating...';
+
+    // Simulate delay
+    setTimeout(() => {
+      // Create canvas to apply cool blue transparent overlay for AI effect
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+
+        ctx.fillStyle = 'rgba(38, 139, 210, 0.35)';  // A nice blue tint for interior design
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const newDataUrl = canvas.toDataURL('image/png');
+        generatedImage.src = newDataUrl;
+        generatedImage.alt = 'Simulated redesigned interior image';
+        styleTags.textContent = 'Style Tags: Modern, Minimalist, Cozy';
+
+        downloadBtn.disabled = false;
+        resultsSection.style.display = 'block';
+
+        generateBtn.disabled = false;
+        generateBtn.textContent = 'Generate Interior Design';
+      };
+      img.src = originalImageDataUrl;
+    }, 1800);
+  }
+
+  generateBtn.addEventListener('click', simulateInteriorGeneration);
+
+  downloadBtn.addEventListener('click', () => {
+    if (!generatedImage.src) return;
+    const link = document.createElement('a');
+    link.href = generatedImage.src;
+    link.download = 'stylefusion_interior.png';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  });
+})();
+</script>
+</body>
+</html>

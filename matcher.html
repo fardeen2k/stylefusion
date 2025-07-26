@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StyleFusion.ai - Style Matcher</title>
+<style>
+  body, html {
+    margin: 0; padding: 0;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+  }
+  header {
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+  header h1 {
+    font-weight: 900;
+    font-size: 2.8rem;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.3rem;
+    text-shadow: 2px 2px 5px #0009;
+  }
+  header p {
+    font-weight: 600;
+    font-size: 1.2rem;
+    color: #d0caffcc;
+  }
+  main {
+    background: rgba(255 255 255 / 0.15);
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 700px;
+    width: 100%;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    user-select:none;
+  }
+  label.file-label {
+    display: inline-block;
+    background: #6a11cb;
+    padding: 0.8rem 1.8rem;
+    margin: 1rem 0;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    border-radius: 10px;
+    user-select:none;
+    transition: background 0.3s ease;
+  }
+  label.file-label:hover, label.file-label:focus {
+    background: #5333aa;
+    outline: none;
+  }
+  input[type="file"] {
+    display: none;
+  }
+  #uploads {
+    display: flex;
+    justify-content: space-around;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+  .preview-box {
+    background: #fff8;
+    border-radius: 12px;
+    width: 300px;
+    height: 200px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px #0005;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .preview-box img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+  button#matchBtn {
+    width: 100%;
+    padding: 1rem;
+    background: #6a11cb;
+    border: none;
+    font-weight: 900;
+    font-size: 1.25rem;
+    color: white;
+    border-radius: 14px;
+    cursor: pointer;
+    user-select:none;
+    box-shadow: 0 6px 20px rgba(106,17,203,0.8);
+    transition: background 0.3s ease;
+  }
+  button#matchBtn:disabled {
+    background: #9e88ff;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  button#matchBtn:hover:not(:disabled) {
+    background: #5333aa;
+  }
+  #result {
+    margin-top: 2rem;
+    background: rgba(255 255 255 / 0.2);
+    border-radius: 12px;
+    padding: 1.5rem;
+    color: #f0e6ff;
+    font-weight: 700;
+    font-size: 1.3rem;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    text-align: center;
+    min-height: 80px;
+  }
+  footer {
+    margin-top: auto;
+    font-weight: 600;
+    color: #d0caffcc;
+    user-select:none;
+    text-align: center;
+    padding: 1rem 0;
+  }
+  @media (max-width: 700px) {
+    #uploads {
+      flex-direction: column;
+      align-items: center;
+    }
+    .preview-box {
+      width: 90vw;
+      height: 220px;
+      margin-bottom: 1rem;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>StyleFusion.ai</h1>
+  <p>Style Matcher: Combine Your Room and Outfit Aesthetics</p>
+</header>
+<main>
+  <div id="uploads">
+    <div>
+      <label for="interiorInput" class="file-label" tabindex="0">Upload Interior Image</label>
+      <input type="file" id="interiorInput" accept="image/*" />
+      <div class="preview-box" id="interiorPreview" aria-live="polite" aria-atomic="true">No image uploaded</div>
+    </div>
+    <div>
+      <label for="fashionInput" class="file-label" tabindex="0">Upload Fashion Sketch</label>
+      <input type="file" id="fashionInput" accept="image/*" />
+      <div class="preview-box" id="fashionPreview" aria-live="polite" aria-atomic="true">No image uploaded</div>
+    </div>
+  </div>
+
+  <button id="matchBtn" disabled aria-disabled="true" aria-label="Match interior and fashion styles">Match Styles</button>
+
+  <div id="result" aria-live="polite" aria-atomic="true" role="region" aria-label="Matching result">
+    Upload both images and click "Match Styles" to see result.
+  </div>
+</main>
+
+<footer>&copy; 2024 StyleFusion.ai</footer>
+
+<script>
+(() => {
+  const interiorInput = document.getElementById('interiorInput');
+  const fashionInput = document.getElementById('fashionInput');
+  const interiorPreview = document.getElementById('interiorPreview');
+  const fashionPreview = document.getElementById('fashionPreview');
+  const matchBtn = document.getElementById('matchBtn');
+  const resultDiv = document.getElementById('result');
+
+  let interiorImageFile = null;
+  let fashionImageFile = null;
+
+  function previewImage(inputElem, previewElem) {
+    const file = inputElem.files[0];
+    if (!file) {
+      previewElem.textContent = 'No image uploaded';
+      return null;
+    }
+    const reader = new FileReader();
+    reader.onload = e => {
+      previewElem.innerHTML = `<img src="${e.target.result}" alt="Uploaded image preview" />`;
+    };
+    reader.readAsDataURL(file);
+    return file;
+  }
+
+  interiorInput.addEventListener('change', () => {
+    interiorImageFile = previewImage(interiorInput, interiorPreview);
+    checkEnableMatch();
+    clearResult();
+  });
+
+  fashionInput.addEventListener('change', () => {
+    fashionImageFile = previewImage(fashionInput, fashionPreview);
+    checkEnableMatch();
+    clearResult();
+  });
+
+  function checkEnableMatch() {
+    if (interiorInput.files.length > 0 && fashionInput.files.length > 0) {
+      matchBtn.disabled = false;
+      matchBtn.setAttribute('aria-disabled', 'false');
+    } else {
+      matchBtn.disabled = true;
+      matchBtn.setAttribute('aria-disabled', 'true');
+    }
+  }
+
+  function clearResult() {
+    resultDiv.textContent = 'Upload both images and click "Match Styles" to see result.';
+  }
+
+  matchBtn.addEventListener('click', async () => {
+    if (!interiorInput.files[0] || !fashionInput.files[0]) return;
+
+    matchBtn.disabled = true;
+    matchBtn.textContent = 'Matching styles...';
+    resultDiv.textContent = '';
+
+    try {
+      const formData = new FormData();
+      formData.append('interior', interiorInput.files[0]);
+      formData.append('fashion', fashionInput.files[0]);
+
+      // Change this URL to your backend URL if deployed elsewhere
+      const response = await fetch('http://localhost:5000/match-styles', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+      const data = await response.json();
+
+      resultDiv.innerHTML = `
+        <p><strong>Similarity Score:</strong> ${data.similarity}</p>
+        <p><strong>Match Quality:</strong> ${data.match_tag}</p>
+        <p><em>${data.style_suggestion}</em></p>
+      `;
+    } catch (err) {
+      resultDiv.textContent = 'Error matching styles: ' + err.message;
+    }
+
+    matchBtn.disabled = false;
+    matchBtn.textContent = 'Match Styles';
+  });
+})();
+</script>
+</body>
+</html>
